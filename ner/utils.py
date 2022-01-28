@@ -205,7 +205,7 @@ def ner_decoding(example_all, id2label, logits_all,trans=None):
     return formatted_outputs
 
 # 解析ner指针 (batch,num_labels,seq_len,seq_len)
-def ner_pointer_decoding(example_all, id2label, logits_all, threshold=0.):
+def ner_pointer_decoding(example_all, id2label, logits_all, threshold=1e-8):
     formatted_outputs = []
     for (i, (text_raw, logits)) in enumerate(zip(example_all, logits_all)):
         chunks = []
