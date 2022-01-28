@@ -205,14 +205,30 @@ def ner_decoding(example_all, id2label, logits_all,trans=None):
     return formatted_outputs
 
 # 解析ner指针 (batch,num_labels,seq_len,seq_len)
-def ner_pointer_decoding(example_all, id2label, logits_all,threshold=0.):
+def ner_pointer_decoding(example_all, id2label, logits_all, threshold=0.):
     formatted_outputs = []
     for (i, (text_raw, logits)) in enumerate(zip(example_all, logits_all)):
-        label = []
+        chunks = []
         for l, start, end in zip(*np.where(logits > threshold)):
+            start -= 1
+            end -= 1
+            start = int(start)
+            end = int(end)
             str_label = id2label[l]
-            label.append((start, end,str_label))
-        formatted_outputs.append(label)
+            chunks.append((str_label, start, end, str(text_raw[start:end + 1])))
+
+        labels = {}
+        for chunk in chunks:
+            l = chunk[0]
+            if l not in labels:
+                labels[l] = {}
+            o = labels[l]
+            txt = chunk[3]
+            if txt not in o:
+                o[txt] = [[chunk[1], chunk[2]]]
+            else:
+                o[txt].append([chunk[1], chunk[2]])
+    formatted_outputs.append(labels)
     return formatted_outputs
 
 def load_label_bio(label_file_or_list):
@@ -248,5 +264,21 @@ def load_label_bioes(label_file_or_list):
             labels.append(line)
     labels =['O'] + [i + '-' + j  for i in ['B','I','E','S'] for j in labels]
     #label2id ={j:i for i,j in enumerate(labels)}
+    id2label={i:j for i,j in enumerate(labels)}
+    return id2label
+
+def load_labels(label_file_or_list):
+    if isinstance(label_file_or_list, list):
+        labels = label_file_or_list
+    else:
+        with open(label_file_or_list, mode='r', encoding='utf-8') as f:
+            lines = f.readlines()
+        labels = []
+        for line in lines:
+            line = line.replace('\r\n','')
+            line = line.replace('\n', '')
+            if line == '':
+                continue
+            labels.append(line)
     id2label={i:j for i,j in enumerate(labels)}
     return id2label
