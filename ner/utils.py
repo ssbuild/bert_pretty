@@ -209,11 +209,14 @@ def ner_pointer_decoding(example_all, id2label, logits_all, threshold=1e-8):
     formatted_outputs = []
     for (i, (text_raw, logits)) in enumerate(zip(example_all, logits_all)):
         chunks = []
+        t_length = len(text_raw)
         for l, start, end in zip(*np.where(logits > threshold)):
             start -= 1
             end -= 1
             start = int(start)
             end = int(end)
+            if start > end or end >= t_length or start < 0:
+                continue
             str_label = id2label[l]
             chunks.append((str_label, start, end, str(text_raw[start:end + 1])))
 
