@@ -3,7 +3,7 @@ import numpy as np
 from bert_text_pretty import cls,ner,relation,tokenization
 
 '''
-    简化文本特征化，解码，当前ner为crf 解码
+    简化文本特征化，解码，当前ner为crf 解码 , 指针解码
     https://github.com/ssbuild/bert_text_pretty.git
 '''
 
