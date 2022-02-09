@@ -3,7 +3,7 @@ import numpy as np
 from bert_text_pretty import cls,ner,relation,tokenization
 
 '''
-    简化文本特征化，解码，当前ner为crf 解码 , 指针解码
+    简化文本特征化，解码
     https://github.com/ssbuild/bert_text_pretty.git
 '''
 
@@ -29,7 +29,7 @@ print(cls.load_labels(labels))
 print(ner.load_label_bio(labels))
 
 
-# def ner_decoding(example_all, id2label, logits_all,trans=None)
+# def ner_decoding(example_all, id2label, logits_all,trans=None) # crf 解码
 '''
     example_all 文本list , 
     id2label 标签 list or dict
@@ -40,7 +40,7 @@ print(ner.load_label_bio(labels))
 '''
 
 
-#ner_pointer_decoding(example_all, id2label, logits_all,threshold=0.):
+#ner_pointer_decoding(example_all, id2label, logits_all,threshold=0.) # 指针 解码
 '''
    example_all 文本list , 
    id2label 标签 list or dict
