@@ -231,7 +231,7 @@ def ner_pointer_decoding(example_all, id2label, logits_all, threshold=1e-8):
                 o[txt] = [[chunk[1], chunk[2]]]
             else:
                 o[txt].append([chunk[1], chunk[2]])
-    formatted_outputs.append(labels)
+        formatted_outputs.append(labels)
     return formatted_outputs
 
 def load_label_bio(label_file_or_list):
