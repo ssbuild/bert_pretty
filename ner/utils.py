@@ -220,6 +220,8 @@ def ner_pointer_decoding(example_all, id2label, logits_all, threshold=1e-8):
             str_label = id2label[l]
             chunks.append((str_label, start, end, str(text_raw[start:end + 1])))
 
+        if not chunks:
+            continue
         labels = {}
         for chunk in chunks:
             l = chunk[0]
