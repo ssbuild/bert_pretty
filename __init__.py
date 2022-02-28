@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from tokenization import FullTokenizer
-from feature import callback_char_level, \
+from .tokenization import FullTokenizer
+from .feature import callback_char_level, \
         callback_word_level,\
         callback_char_level_input_ids_mask,\
         callback_word_level_input_ids_mask, \

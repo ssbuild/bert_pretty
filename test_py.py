@@ -5,9 +5,7 @@
 '''
 
 import numpy as np
-
-#tokenization can also use yourself
-
+#FullTokenizer is official and you can use your tokenization .
 from bert_pretty import FullTokenizer,\
         text_feature, \
         text_feature_char_level,\

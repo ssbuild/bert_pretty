@@ -341,8 +341,8 @@ def ner_pointer_decoding_with_mapping(batch_text, id2label, batch_logits, batch_
             if (start >= m_len or start < 0) or (end > m_len) or start > end:
                 continue
 
-            start = int(mapping[start])
-            end = int(mapping[end])
+            start = int(mapping[start][0])
+            end = int(mapping[end][-1])
             if start > end or end >= t_length or start < 0:
                 continue
             str_label = id2label[l]
