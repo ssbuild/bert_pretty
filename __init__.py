@@ -15,5 +15,3 @@ from feature import callback_char_level, \
         text_feature_word_level_input_ids_segment
 
 
-from ner import ner_crf_decoding,ner_pointer_decoding
-from cls import cls_softmax_decoding,cls_sigmoid_decoding

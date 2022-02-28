@@ -9,12 +9,6 @@ import numpy as np
 #tokenization can also use yourself
 
 from bert_pretty import FullTokenizer,\
-        callback_char_level, \
-        callback_word_level,\
-        callback_char_level_input_ids_mask,\
-        callback_word_level_input_ids_mask, \
-        callback_char_level_input_ids_segment, \
-        callback_char_level_input_ids_segment, \
         text_feature, \
         text_feature_char_level,\
         text_feature_word_level,\
@@ -23,8 +17,8 @@ from bert_pretty import FullTokenizer,\
         text_feature_char_level_input_ids_segment, \
         text_feature_word_level_input_ids_segment
 
-from bert_pretty import ner_crf_decoding,ner_pointer_decoding
-from bert_pretty import cls_softmax_decoding,cls_sigmoid_decoding
+from bert_pretty.ner import ner_crf_decoding,ner_pointer_decoding,ner_pointer_decoding_with_mapping,load_label_bioes,load_label_bio,load_labels as ner_load_labels
+from bert_pretty.cls import cls_softmax_decoding,cls_sigmoid_decoding,load_labels as cls_load_labels
 
 
 tokenizer = FullTokenizer(vocab_file=r'F:\pretrain\chinese_L-12_H-768_A-12\vocab.txt',do_lower_case=True)
