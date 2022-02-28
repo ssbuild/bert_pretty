@@ -3,14 +3,26 @@
 # @FileName: feature.py
 import numpy as np
 from functools import partial
-__all__ = ['tokens_char_mapper_callback','tokens_word_mapper_callback','text_feature','text_feature_char_level','text_feature_word_level']
+
+__all__ = [
+        'callback_char_level',
+        'callback_word_level',
+        'callback_char_level_input_ids_mask',
+        'callback_word_level_input_ids_mask',
+        'callback_char_level_input_ids_segment',
+        'callback_char_level_input_ids_segment',
+        'text_feature',
+        'text_feature_char_level',
+        'text_feature_word_level',
+        'text_feature_char_level_input_ids_mask',
+        'text_feature_word_level_input_ids_mask',
+        'text_feature_char_level_input_ids_segment',
+        'text_feature_word_level_input_ids_segment',
+]
 
 
-'''
-    char level token callback function
-'''
-def tokens_char_mapper_callback(tokenizer,text,max_seq_len,with_padding):
-    word_list = list(text)
+def callback_char_level(tokenizer, input_instance, max_seq_len, with_padding):
+    word_list = list(input_instance)
     tokens = ["[CLS]"]
     for i, word in enumerate(word_list):
         token = tokenizer.tokenize(word)
@@ -20,7 +32,49 @@ def tokens_char_mapper_callback(tokenizer,text,max_seq_len,with_padding):
     tokens.append("[SEP]")
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
     input_mask = [1] * len(input_ids)
+    segment_ids = [0] * len(input_ids)
+    if with_padding:
+        while len(input_ids) < max_seq_len:
+            input_ids.append(0)
+            input_mask.append(0)
+            segment_ids.append(0)
+    return input_ids,input_mask,segment_ids
 
+
+def callback_word_level(tokenizer, input_instance, max_seq_len, with_padding):
+    tokens = tokenizer.tokenize(input_instance)
+    if len(tokens) > max_seq_len - 2:
+        tokens = tokens[0:max_seq_len - 2]
+    tokens.insert(0, "[CLS]")
+    tokens.append("[SEP]")
+    input_ids = tokenizer.convert_tokens_to_ids(tokens)
+    input_mask = [1] * len(input_ids)
+    segment_ids = [0] * len(input_ids)
+    if with_padding:
+        while len(input_ids) < max_seq_len:
+            input_ids.append(0)
+            input_mask.append(0)
+            segment_ids.append(0)
+    return input_ids,input_mask,segment_ids
+
+
+
+
+
+'''
+    char level token callback function
+'''
+def callback_char_level_input_ids_mask(tokenizer,input_instance,max_seq_len,with_padding):
+    word_list = list(input_instance)
+    tokens = ["[CLS]"]
+    for i, word in enumerate(word_list):
+        token = tokenizer.tokenize(word)
+        tokens.extend(token)
+    if len(tokens) > max_seq_len - 1:
+        tokens = tokens[0:max_seq_len - 1]
+    tokens.append("[SEP]")
+    input_ids = tokenizer.convert_tokens_to_ids(tokens)
+    input_mask = [1] * len(input_ids)
     if with_padding:
         while len(input_ids) < max_seq_len:
             input_ids.append(0)
@@ -31,8 +85,8 @@ def tokens_char_mapper_callback(tokenizer,text,max_seq_len,with_padding):
     not char level token callback function
 '''
 
-def tokens_word_mapper_callback(tokenizer, text, max_seq_len,with_padding):
-    tokens = tokenizer.tokenize(text)
+def callback_word_level_input_ids_mask(tokenizer, input_instance, max_seq_len,with_padding):
+    tokens = tokenizer.tokenize(input_instance)
     if len(tokens) > max_seq_len - 2:
         tokens = tokens[0:max_seq_len - 2]
     tokens.insert(0, "[CLS]")
@@ -45,6 +99,41 @@ def tokens_word_mapper_callback(tokenizer, text, max_seq_len,with_padding):
             input_ids.append(0)
             input_mask.append(0)
     return input_ids,input_mask
+
+def callback_word_level_input_ids_segment(tokenizer, input_instance, max_seq_len, with_padding):
+    tokens = tokenizer.tokenize(input_instance)
+    if len(tokens) > max_seq_len - 2:
+        tokens = tokens[0:max_seq_len - 2]
+    tokens.insert(0, "[CLS]")
+    tokens.append("[SEP]")
+    input_ids = tokenizer.convert_tokens_to_ids(tokens)
+    segment_ids = [0] * len(input_ids)
+    if with_padding:
+        while len(input_ids) < max_seq_len:
+            input_ids.append(0)
+            segment_ids.append(0)
+    return input_ids,segment_ids
+
+def callback_char_level_input_ids_segment(tokenizer, input_instance, max_seq_len, with_padding):
+    word_list = list(input_instance)
+    tokens = ["[CLS]"]
+    for i, word in enumerate(word_list):
+        token = tokenizer.tokenize(word)
+        tokens.extend(token)
+    if len(tokens) > max_seq_len - 1:
+        tokens = tokens[0:max_seq_len - 1]
+    tokens.append("[SEP]")
+    input_ids = tokenizer.convert_tokens_to_ids(tokens)
+    segment_ids = [0] * len(input_ids)
+    if with_padding:
+        while len(input_ids) < max_seq_len:
+            input_ids.append(0)
+            segment_ids.append(0)
+    return input_ids,segment_ids
+
+
+
+
 
 '''
     text_feature
@@ -60,7 +149,7 @@ def tokens_word_mapper_callback(tokenizer, text, max_seq_len,with_padding):
 def text_feature(tokenizer,text_list:list,
                  max_seq_len: int=128,
                  with_padding:bool=False,
-                 input_ids_callback=tokens_char_mapper_callback,
+                 input_ids_callback=callback_word_level,
                  input_ids_align_num=-1):
     if text_list is None or not isinstance(text_list,list):
         return None
@@ -97,5 +186,11 @@ def text_feature(tokenizer,text_list:list,
     return all_ids
 
 
-text_feature_char_level = partial(text_feature, input_ids_callback=tokens_char_mapper_callback)
-text_feature_word_level = partial(text_feature, input_ids_callback=tokens_word_mapper_callback)
+text_feature_char_level = partial(text_feature, input_ids_callback=callback_char_level)
+text_feature_word_level = partial(text_feature, input_ids_callback=callback_word_level)
+
+text_feature_char_level_input_ids_mask = partial(text_feature, input_ids_callback=callback_char_level_input_ids_mask)
+text_feature_word_level_input_ids_mask = partial(text_feature, input_ids_callback=callback_word_level_input_ids_mask)
+
+text_feature_char_level_input_ids_segment = partial(text_feature, input_ids_callback=callback_char_level_input_ids_segment)
+text_feature_word_level_input_ids_segment = partial(text_feature, input_ids_callback=callback_word_level_input_ids_segment)

@@ -5,9 +5,20 @@
 '''
 
 import numpy as np
-import sys
-sys.path.append('.')
-from feature import tokens_char_mapper_callback,tokens_word_mapper_callback,text_feature,text_feature_char_level,text_feature_word_level
+from bert_pretty.feature import callback_char_level, \
+        callback_word_level,\
+        callback_char_level_input_ids_mask,\
+        callback_word_level_input_ids_mask, \
+        callback_char_level_input_ids_segment, \
+        callback_char_level_input_ids_segment, \
+        text_feature, \
+        text_feature_char_level,\
+        text_feature_word_level,\
+        text_feature_char_level_input_ids_mask, \
+        text_feature_word_level_input_ids_mask, \
+        text_feature_char_level_input_ids_segment, \
+        text_feature_word_level_input_ids_segment
+
 from ner import ner_crf_decoding,ner_pointer_decoding
 from cls import cls_softmax_decoding,cls_sigmoid_decoding
 
@@ -18,25 +29,44 @@ text_list = ["你是谁123456"]
 
 #convert_to_ids 基础用法1
 def test_feat1():
-    feat = text_feature_word_level(tokenizer,text_list,max_seq_len=128,with_padding=False)
-    print('word level',feat)
-    #字符级别
     feat = text_feature_char_level(tokenizer,text_list,max_seq_len=128,with_padding=False)
     print('char level',feat)
+
+    feat = text_feature_word_level(tokenizer,text_list,max_seq_len=128,with_padding=False)
+    print('word level',feat)
+
+    feat = text_feature_char_level_input_ids_mask(tokenizer, text_list, max_seq_len=128, with_padding=False)
+    print('char level', feat)
+
+    feat = text_feature_word_level_input_ids_mask(tokenizer, text_list, max_seq_len=128, with_padding=False)
+    print('word level', feat)
+
+    feat = text_feature_char_level_input_ids_segment(tokenizer, text_list, max_seq_len=128, with_padding=False)
+    print('char level', feat)
+
+    feat = text_feature_word_level_input_ids_segment(tokenizer, text_list, max_seq_len=128, with_padding=False)
+    print('word level', feat)
 
 #convert_to_ids 基础用法2
 def test_feat2():
     def my_input_callback1(tokenizer, text, max_seq_len, with_padding):
-        word_list = list(text)
-        tokens = ["[CLS]"]
-        for i, word in enumerate(word_list):
-            token = tokenizer.tokenize(word)
-            tokens.extend(token)
-        if len(tokens) > max_seq_len - 1:
-            tokens = tokens[0:max_seq_len - 1]
+        tokens = tokenizer.tokenize(text)
+        if len(tokens) > max_seq_len - 2:
+            tokens = tokens[0:max_seq_len - 2]
+        tokens.insert(0, "[CLS]")
         tokens.append("[SEP]")
         input_ids = tokenizer.convert_tokens_to_ids(tokens)
         segment_ids = [0] * len(input_ids)
+        #word_list = list(text)
+        # tokens = ["[CLS]"]
+        # for i, word in enumerate(word_list):
+        #     token = tokenizer.tokenize(word)
+        #     tokens.extend(token)
+        # if len(tokens) > max_seq_len - 1:
+        #     tokens = tokens[0:max_seq_len - 1]
+        # tokens.append("[SEP]")
+        # input_ids = tokenizer.convert_tokens_to_ids(tokens)
+        #segment_ids = [0] * len(input_ids)
         if with_padding:
             while len(input_ids) < max_seq_len:
                 input_ids.append(0)
