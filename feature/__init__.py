@@ -34,7 +34,7 @@ def get_word_token_ids(fn):
             mapping = rematch(input_instance,tokens,tokenizer.basic_tokenizer.do_lower_case)
         else:
             mapping = None
-        return fn(input_ids,max_seq_len,with_padding,mapping)
+        return fn(tokenizer,input_ids,max_seq_len,with_padding,mapping)
     return _get_word_token_ids
 
 def get_char_token_ids(fn):
@@ -49,37 +49,40 @@ def get_char_token_ids(fn):
             tokens = tokens[0:max_seq_len - 1]
         tokens.append("[SEP]")
         input_ids = tokenizer.convert_tokens_to_ids(tokens)
-        return fn(input_ids,max_seq_len,with_padding)
+        return fn(tokenizer,input_ids,max_seq_len,with_padding)
     return _get_char_token_ids
 
 
 
 @get_char_token_ids
-def callback_char_level(input_ids, max_seq_len, with_padding):
+def callback_char_level(tokenizer,input_ids, max_seq_len, with_padding):
     input_mask = [1] * len(input_ids)
     segment_ids = [0] * len(input_ids)
     if with_padding:
+        pad_val = tokenizer.vocab.get('[PAD]', 0)
         while len(input_ids) < max_seq_len:
-            input_ids.append(0)
+            input_ids.append(pad_val)
             input_mask.append(0)
             segment_ids.append(0)
     return input_ids,input_mask,segment_ids
 
 @get_char_token_ids
-def callback_char_level_input_ids_mask(input_ids, max_seq_len, with_padding):
+def callback_char_level_input_ids_mask(tokenizer,input_ids, max_seq_len, with_padding):
     input_mask = [1] * len(input_ids)
     if with_padding:
+        pad_val = tokenizer.vocab.get('[PAD]', 0)
         while len(input_ids) < max_seq_len:
-            input_ids.append(0)
+            input_ids.append(pad_val)
             input_mask.append(0)
     return input_ids, input_mask
 
 @get_char_token_ids
-def callback_char_level_input_ids_segment(input_ids, max_seq_len, with_padding):
+def callback_char_level_input_ids_segment(tokenizer,input_ids, max_seq_len, with_padding):
     segment_ids = [0] * len(input_ids)
     if with_padding:
+        pad_val = tokenizer.vocab.get('[PAD]', 0)
         while len(input_ids) < max_seq_len:
-            input_ids.append(0)
+            input_ids.append(pad_val)
             segment_ids.append(0)
     return input_ids,segment_ids
 
@@ -88,12 +91,13 @@ def callback_char_level_input_ids_segment(input_ids, max_seq_len, with_padding):
 
 
 @get_word_token_ids
-def callback_word_level(input_ids,max_seq_len,with_padding,mapping):
+def callback_word_level(tokenizer,input_ids,max_seq_len,with_padding,mapping):
     input_mask = [1] * len(input_ids)
     segment_ids = [0] * len(input_ids)
     if with_padding:
+        pad_val = tokenizer.vocab.get('[PAD]', 0)
         while len(input_ids) < max_seq_len:
-            input_ids.append(0)
+            input_ids.append(pad_val)
             input_mask.append(0)
             segment_ids.append(0)
     if mapping is not None:
@@ -101,22 +105,24 @@ def callback_word_level(input_ids,max_seq_len,with_padding,mapping):
     return input_ids,input_mask,segment_ids
 
 @get_word_token_ids
-def callback_word_level_input_ids_mask(input_ids,max_seq_len,with_padding,mapping):
+def callback_word_level_input_ids_mask(tokenizer,input_ids,max_seq_len,with_padding,mapping):
     input_mask = [1] * len(input_ids)
     if with_padding:
+        pad_val = tokenizer.vocab.get('[PAD]', 0)
         while len(input_ids) < max_seq_len:
-            input_ids.append(0)
+            input_ids.append(pad_val)
             input_mask.append(0)
     if mapping is not None:
         return input_ids, input_mask, mapping
     return input_ids,input_mask
 
 @get_word_token_ids
-def callback_word_level_input_ids_segment(input_ids,max_seq_len,with_padding,mapping):
+def callback_word_level_input_ids_segment(tokenizer,input_ids,max_seq_len,with_padding,mapping):
     segment_ids = [0] * len(input_ids)
     if with_padding:
+        pad_val = tokenizer.vocab.get('[PAD]', 0)
         while len(input_ids) < max_seq_len:
-            input_ids.append(0)
+            input_ids.append(pad_val)
             segment_ids.append(0)
     if mapping is not None:
         return input_ids, segment_ids, mapping
@@ -171,12 +177,13 @@ def text_feature(tokenizer,text_list:list,
         r_max_len = max(len(input_ids), r_max_len)
 
     if len(text_list) > 1:
+        pad_val = tokenizer.vocab.get('[PAD]',0)
         r_max_len = min(r_max_len, max_seq_len)
         item_num = len(all_ids) if is_muti_input else 1
         assert input_ids_align_num <= item_num
         n = input_ids_align_num if input_ids_align_num > 0 else item_num
         for i in range(n):
-            all_ids[i] = list(map(lambda x: np.pad(x, (0, r_max_len - len(x))), all_ids[i]))
+            all_ids[i] = list(map(lambda x: np.pad(x, (0, r_max_len - len(x)),constant_values=pad_val), all_ids[i]))
             all_ids[i] = np.asarray(all_ids[i], dtype=np.int32)
     return all_ids
 

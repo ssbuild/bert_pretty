@@ -20,11 +20,12 @@ from bert_pretty.cls import cls_softmax_decoding,cls_sigmoid_decoding,load_label
 
 
 tokenizer = FullTokenizer(vocab_file=r'F:\pretrain\chinese_L-12_H-768_A-12\vocab.txt',do_lower_case=True)
-text_list = ["你是谁123456"]
+
+text_list = ["你是谁123456",'AA']
 
 #convert_to_ids 基础用法1
 def test_feat1():
-    feat = text_feature_char_level(tokenizer,text_list,max_seq_len=128,with_padding=False)
+    feat = text_feature_char_level(tokenizer,text_list,max_seq_len=64,with_padding=True)
     print('char level',feat)
     feat = text_feature_char_level_input_ids_mask(tokenizer, text_list, max_seq_len=128, with_padding=False)
     print('char level', feat)
