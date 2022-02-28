@@ -19,11 +19,11 @@ from bert_pretty.feature import callback_char_level, \
         text_feature_char_level_input_ids_segment, \
         text_feature_word_level_input_ids_segment
 
-from ner import ner_crf_decoding,ner_pointer_decoding
-from cls import cls_softmax_decoding,cls_sigmoid_decoding
+from bert_pretty.ner import ner_crf_decoding,ner_pointer_decoding
+from bert_pretty.cls import cls_softmax_decoding,cls_sigmoid_decoding
 
 #tokenization can also use yourself
-from tokenization import FullTokenizer
+from bert_pretty.tokenization import FullTokenizer
 tokenizer = FullTokenizer(vocab_file=r'F:\pretrain\chinese_L-12_H-768_A-12\vocab.txt',do_lower_case=True)
 text_list = ["你是谁123456"]
 
