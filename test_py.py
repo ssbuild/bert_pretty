@@ -166,13 +166,13 @@ def test_feat2():
 '''
 
 '''
-    def ner_pointer_decoding(batch_text, id2label, batch_logits, threshold=1e-8,coordinates_minus=True):
+    def ner_pointer_decoding(batch_text, id2label, batch_logits, threshold=1e-8,coordinates_minus=False)
 
     batch_text text list , 
     id2label 标签 list or dict
     batch_logits (batch,num_labels,seq_len,seq_len)
     threshold 阈值
-    coordinates_minus
+    coordinates_minus: whether start and end do minus
 '''
 
 
