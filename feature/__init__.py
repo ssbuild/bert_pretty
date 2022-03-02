@@ -3,7 +3,7 @@
 # @FileName: feature.py
 import numpy as np
 from functools import partial
-from .tokenization_map import rematch
+from .tokenization_map import rematch,token_ids_decode
 __all__ = [
         'callback_char_level',
         'callback_word_level',
@@ -18,6 +18,7 @@ __all__ = [
         'text_feature_word_level_input_ids_mask',
         'text_feature_char_level_input_ids_segment',
         'text_feature_word_level_input_ids_segment',
+        'rematch','token_ids_decode'
 ]
 
 

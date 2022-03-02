@@ -3,6 +3,7 @@
 # @FileName: tokenization_map.py
 
 import unicodedata
+import re
 
 __all__ = ["rematch"]
 
@@ -15,6 +16,8 @@ def lowercase_and_normalize(text):
     text = ''.join([ch for ch in text if unicodedata.category(ch) != 'Mn'])
     return text
 
+def _cjk_punctuation():
+    return u'\uff02\uff03\uff04\uff05\uff06\uff07\uff08\uff09\uff0a\uff0b\uff0c\uff0d\uff0f\uff1a\uff1b\uff1c\uff1d\uff1e\uff20\uff3b\uff3c\uff3d\uff3e\uff3f\uff40\uff5b\uff5c\uff5d\uff5e\uff5f\uff60\uff62\uff63\uff64\u3000\u3001\u3003\u3008\u3009\u300a\u300b\u300c\u300d\u300e\u300f\u3010\u3011\u3014\u3015\u3016\u3017\u3018\u3019\u301a\u301b\u301c\u301d\u301e\u301f\u3030\u303e\u303f\u2013\u2014\u2018\u2019\u201b\u201c\u201d\u201e\u201f\u2026\u2027\ufe4f\ufe51\ufe54\u00b7\uff01\uff1f\uff61\u3002'
 
 def _is_punctuation(ch):
     """标点符号类字符判断（全/半角均在此内）
@@ -82,6 +85,38 @@ def _is_redundant(token):
             if (_is_cjk_character(ch) or _is_punctuation(ch)):
                 return True
 
+def token_ids_decode(ids,token_dict_inv):
+    """转为可读文本
+    """
+
+    tokens = [token_dict_inv[id] for id in ids]
+    tokens = [token for token in tokens if not _is_special(token)]
+
+    text, flag = '', False
+    for i, token in enumerate(tokens):
+        if token[:2] == '##':
+            text += token[2:]
+        elif len(token) == 1 and _is_cjk_character(token):
+            text += token
+        elif len(token) == 1 and _is_punctuation(token):
+            text += token
+            text += ' '
+        elif i > 0 and _is_cjk_character(text[-1]):
+            text += token
+        else:
+            text += ' '
+            text += token
+
+    text = re.sub(' +', ' ', text)
+    text = re.sub('\' (re|m|s|t|ve|d|ll) ', '\'\\1 ', text)
+    punctuation = _cjk_punctuation() + '+-/={(<['
+    punctuation_regex = '|'.join([re.escape(p) for p in punctuation])
+    punctuation_regex = '(%s) ' % punctuation_regex
+    text = re.sub(punctuation_regex, '\\1', text)
+    text = re.sub('(\d\.) (\d)', '\\1\\2', text)
+
+    return text.strip()
+
 def rematch(text, tokens,_do_lower_case):
     """给出原始的text和tokenize后的tokens的映射关系
     """
@@ -100,9 +135,10 @@ def rematch(text, tokens,_do_lower_case):
         char_mapping.extend([i] * len(ch))
 
     text, token_mapping, offset = normalized_text, [], 0
-    for token in tokens:
+
+    for i,token in enumerate(tokens):
         if _is_special(token):
-            token_mapping.append([])
+            token_mapping.append([] if i == 0 or i == len(tokens) - 1 else [offset])
         else:
             token = _stem(token)
             start = text[offset:].index(token) + offset

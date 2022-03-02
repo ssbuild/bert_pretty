@@ -3,7 +3,6 @@
     bert input_instance encode and result decode
     https://github.com/ssbuild/bert_pretty.git
 '''
-
 import numpy as np
 #FullTokenizer is official and you can use your tokenization .
 from bert_pretty import FullTokenizer,\
@@ -15,13 +14,13 @@ from bert_pretty import FullTokenizer,\
         text_feature_char_level_input_ids_segment, \
         text_feature_word_level_input_ids_segment
 
+
 from bert_pretty.ner import ner_crf_decoding,ner_pointer_decoding,ner_pointer_decoding_with_mapping,load_label_bioes,load_label_bio,load_labels as ner_load_labels
 from bert_pretty.cls import cls_softmax_decoding,cls_sigmoid_decoding,load_labels as cls_load_labels
 
 
 tokenizer = FullTokenizer(vocab_file=r'F:\pretrain\chinese_L-12_H-768_A-12\vocab.txt',do_lower_case=True)
-
-text_list = ["你是谁123456",'AA']
+text_list = ["你是谁123"]
 
 #convert_to_ids 基础用法1
 def test_feat1():
@@ -205,11 +204,30 @@ def test_cls_decode():
     result = cls_sigmoid_decoding(text_list,['标签1','标签2','标签3'],batch_logits,threshold=0.5)
     print(result)
 
+
+def test_gpt_decode():
+    from bert_pretty.gpt import autoregressive_decode_batch, autoregressive_decode_once
+
+    result = autoregressive_decode_batch(tokenizer, end_symbol=['$','[SEP]'], max_length=10, start_text='你是谁123', try_count=3)
+
+    for i,text in enumerate(result):
+        print(i,len(text),''.join(text))
+
+    print()
+    result = autoregressive_decode_once(tokenizer,end_symbol=['$','[SEP]'],
+                                        special_redo_symbol=['[PAD]','[UNK]'],
+                                        max_length=10, start_text='你是谁123',
+                                        try_count=3)
+
+    for i, text in enumerate(result):
+        print(i, len(text), ''.join(text))
+
 if __name__ == '__main__':
     test_feat1()
     test_feat2()
-
     test_cls_decode()
+    test_gpt_decode()
+
 
 
 
