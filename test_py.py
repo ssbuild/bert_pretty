@@ -19,7 +19,6 @@ from bert_pretty.ner import load_label_bioes,load_label_bio,load_labels as ner_l
 from bert_pretty.ner import ner_crf_decoding,\
                             ner_pointer_decoding,\
                             ner_pointer_decoding_with_mapping,\
-                            ner_pointer_spectial_decoding,ner_pointer_spectial_decoding_with_mapping,\
                             ner_pointer_double_decoding,ner_pointer_double_decoding_with_mapping
 
 from bert_pretty.cls import cls_softmax_decoding,cls_sigmoid_decoding,load_labels as cls_load_labels

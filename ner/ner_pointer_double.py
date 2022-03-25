@@ -7,18 +7,17 @@ import numpy as np
 
 
 '''
-    def ner_pointer_double_decoding(batch_text, id2label, batch_logits_start,batch_logits_end, coordinates_minus=False,threshold=0)
+    def ner_pointer_double_decoding(batch_text, id2label, batch_logits_start,batch_logits_end,with_dict=True,threshold=0.5):
 
     batch_text text list , 
     id2label 标签 list or dict
     batch_logits_start (batch,seq_len,num_labels)
     batch_logits_end (batch,seq_len,num_labels)
     threshold 阈值
-    coordinates_minus
 '''
 
 
-def ner_pointer_double_decoding(batch_text, id2label, batch_logits_start,batch_logits_end, coordinates_minus=False,threshold=0):
+def ner_pointer_double_decoding(batch_text, id2label, batch_logits_start,batch_logits_end,with_dict=True,threshold=0.5):
     formatted_outputs = []
     for (i, (text_raw, logits_start,logits_end)) in enumerate(zip(batch_text, batch_logits_start,batch_logits_end)):
         chunks = []
@@ -26,17 +25,13 @@ def ner_pointer_double_decoding(batch_text, id2label, batch_logits_start,batch_l
         es = []
         t_length = len(text_raw)
 
-        for seq, l in zip(*np.where(logits_start > threshold)):
+        for seq, l in zip(*np.where(logits_start[1:-1] >= threshold)):
             seq = int(seq)
             l = int(l)
-            if coordinates_minus:
-                seq -= 1
             ss.append((seq, l))
-        for seq, l in zip(*np.where(logits_end > threshold)):
+        for seq, l in zip(*np.where(logits_end[1:-1] >= threshold)):
             seq = int(seq)
             l = int(l)
-            if coordinates_minus:
-                seq -= 1
             es.append((seq, l))
 
         for s, l in ss:
@@ -49,6 +44,8 @@ def ner_pointer_double_decoding(batch_text, id2label, batch_logits_start,batch_l
                     continue
                 str_label = id2label[l]
                 chunks.append((str_label, s, e,text_raw[s:e+1]))
+        if not with_dict:
+            formatted_outputs.append(chunks)
         labels = {}
         for chunk in chunks:
             l = chunk[0]
@@ -66,7 +63,7 @@ def ner_pointer_double_decoding(batch_text, id2label, batch_logits_start,batch_l
 
 
 '''
-    def ner_pointer_double_decoding_with_mapping(batch_text, id2label, batch_logits_start,batch_logits_end,batch_mapping, coordinates_minus=False,threshold=0)
+    def ner_pointer_double_decoding_with_mapping(batch_text, id2label, batch_logits_start,batch_logits_end,batch_mapping, with_dict=True,threshold=0.5):
 
     batch_text text list , 
     id2label 标签 list or dict
@@ -79,7 +76,7 @@ def ner_pointer_double_decoding(batch_text, id2label, batch_logits_start,batch_l
 
 
 
-def ner_pointer_double_decoding_with_mapping(batch_text, id2label, batch_logits_start,batch_logits_end,batch_mapping, coordinates_minus=False,threshold=0):
+def ner_pointer_double_decoding_with_mapping(batch_text, id2label, batch_logits_start,batch_logits_end,batch_mapping, with_dict=True,threshold=0.5):
     formatted_outputs = []
     for (i, (text_raw, logits_start,logits_end)) in enumerate(zip(batch_text, batch_logits_start,batch_logits_end)):
         mapping = batch_mapping[i]
@@ -88,20 +85,18 @@ def ner_pointer_double_decoding_with_mapping(batch_text, id2label, batch_logits_
         es = []
         t_length = len(text_raw)
         m_len = len(mapping)
-        for seq, l in zip(*np.where(logits_start > threshold)):
+
+        for seq, l in zip(*np.where(logits_start[1:-1] >= threshold)):
             seq = int(seq)
             l = int(l)
-            if coordinates_minus:
-                seq -= 1
+
             if seq >= m_len:
                 continue
             seq = int(mapping[seq][0])
             ss.append((seq, l))
-        for seq, l in zip(*np.where(logits_end > threshold)):
+        for seq, l in zip(*np.where(logits_end[1:-1] >= threshold)):
             seq = int(seq)
             l = int(l)
-            if coordinates_minus:
-                seq -= 1
             if seq >= m_len:
                 continue
             seq = int(mapping[seq][-1])
@@ -117,6 +112,8 @@ def ner_pointer_double_decoding_with_mapping(batch_text, id2label, batch_logits_
                     continue
                 str_label = id2label[l]
                 chunks.append((str_label, s, e,text_raw[s:e+1]))
+        if not with_dict:
+            formatted_outputs.append(chunks)
         labels = {}
         for chunk in chunks:
             l = chunk[0]
