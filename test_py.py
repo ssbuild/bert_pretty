@@ -15,12 +15,23 @@ from bert_pretty import FullTokenizer,\
         text_feature_word_level_input_ids_segment
 
 
-from bert_pretty.ner import ner_crf_decoding,ner_pointer_decoding,ner_pointer_decoding_with_mapping,load_label_bioes,load_label_bio,load_labels as ner_load_labels
+from bert_pretty.ner import load_label_bioes,load_label_bio,load_labels as ner_load_labels
+from bert_pretty.ner import ner_crf_decoding,\
+                            ner_pointer_decoding,\
+                            ner_pointer_decoding_with_mapping,\
+                            ner_pointer_spectial_decoding,ner_pointer_spectial_decoding_with_mapping,\
+                            ner_pointer_double_decoding,ner_pointer_double_decoding_with_mapping
+
 from bert_pretty.cls import cls_softmax_decoding,cls_sigmoid_decoding,load_labels as cls_load_labels
 
 
 tokenizer = FullTokenizer(vocab_file=r'F:\pretrain\chinese_L-12_H-768_A-12\vocab.txt',do_lower_case=True)
 text_list = ["你是谁123"]
+
+
+
+
+
 
 #convert_to_ids 基础用法1
 def test_feat1():
@@ -223,6 +234,8 @@ def test_gpt_decode():
         print(i, len(text), ''.join(text))
 
 if __name__ == '__main__':
+
+
     test_feat1()
     test_feat2()
     test_cls_decode()
