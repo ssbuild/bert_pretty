@@ -31,19 +31,20 @@ text_list = ["你是谁123aa\ta嘂a","嘂adasd"]
 
 
 def test():
+    maxlen = 512
     do_lower_case = tokenizer.basic_tokenizer.do_lower_case
-    inputs = [tokenizer.tokenize(text) for text in text_list]
-
-    mapping = [rematch(text,tokens, do_lower_case) for text,tokens in zip(text_list,inputs)]
-
-    inputs = [ tokenizer.convert_tokens_to_ids(input) for input in inputs]
-
+    inputs = [['[CLS]'] + tokenizer.tokenize(text)[:maxlen - 2] + ['[SEP]'] for text in text_list]
+    mapping = [rematch(text, tokens, do_lower_case) for text, tokens in zip(text_list, inputs)]
+    inputs = [tokenizer.convert_tokens_to_ids(input) for input in inputs]
     input_mask = [[1] * len(input) for input in inputs]
     input_segment = [[0] * len(input) for input in inputs]
     input_ids = seqs_padding(inputs)
     input_mask = seqs_padding(input_mask)
     input_segment = seqs_padding(input_segment)
 
+    input_ids = np.asarray(input_ids, dtype=np.int32)
+    input_mask = np.asarray(input_mask, dtype=np.int32)
+    input_segment = np.asarray(input_segment, dtype=np.int32)
 
     print('input_ids\n', input_ids)
     print('mapping\n',mapping)
@@ -55,25 +56,21 @@ def test():
 
 def test_charlevel():
     do_lower_case = tokenizer.basic_tokenizer.do_lower_case
-    vocab = tokenizer.vocab
-    unk_id = vocab.get('[UNK]')
-
-    inputs = []
-    for text in text_list:
-        if do_lower_case:
-            inputs.append([vocab.get(char,unk_id) for char in text])
-        else:
-            inputs.append([vocab.get(char.lower(), unk_id) for char in text])
-
-
-
-    inputs = [ tokenizer.convert_tokens_to_ids(input) for input in inputs]
-
+    maxlen = 512
+    if do_lower_case:
+        inputs = [['[CLS]'] + tokenizer.tokenize(text.lower())[:maxlen - 2] + ['[SEP]'] for text in text_list]
+    else:
+        inputs = [['[CLS]'] + tokenizer.tokenize(text)[:maxlen - 2] + ['[SEP]'] for text in text_list]
+    inputs = [tokenizer.convert_tokens_to_ids(input) for input in inputs]
     input_mask = [[1] * len(input) for input in inputs]
     input_segment = [[0] * len(input) for input in inputs]
     input_ids = seqs_padding(inputs)
     input_mask = seqs_padding(input_mask)
     input_segment = seqs_padding(input_segment)
+
+    input_ids = np.asarray(input_ids, dtype=np.int32)
+    input_mask = np.asarray(input_mask, dtype=np.int32)
+    input_segment = np.asarray(input_segment, dtype=np.int32)
 
     print('input_ids\n', input_ids)
     print('input_mask\n',input_mask)
