@@ -61,7 +61,7 @@ def process_result(text, id2label, prob):
     return labels
 
 
-def get_entities(text, id2label, pred):
+def get_entities(text, id2label, pred,with_dict=True):
     length = min(len(text), len(pred))
     chunks = []
     chunk = __chunk__(s=-1, e=-1, label='', text='')
@@ -112,8 +112,9 @@ def get_entities(text, id2label, pred):
                 chunks.append(copy.deepcopy(chunk))
             reset_chunk(chunk)
 
-    # [tuple(chunk) for chunk in chunks]
-    # [('案发时间', 0, 9, '2014年3月29日')]
+    if not with_dict:
+        return chunks
+
     labels = {}
     for chunk in chunks:
         l = chunk.label
@@ -131,7 +132,18 @@ def get_entities(text, id2label, pred):
 # ['[CLS]', '我', '是', '中', '国', 'ASDASDASD1122', 'hello', 'world', '[SEP]']
 # [[], [0], [1], [2], [3], [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], [18, 19, 20, 21, 22], [24, 25, 26, 27, 28], []]
 
-def get_entities_with_mapping(text, id2label, pred, mapping):
+
+'''
+    ner crf decode 解析crf序列  or 解析 已经解析过的crf序列
+
+    batch_text text list , 
+    id2label 标签 list or dict
+    batch_logits 为bert 预测结果 logits_all (batch,seq_len,num_tags) or (batch,seq_len)
+    trans 是否启用trans预测 , 2D 
+    with_dict 是否返回dict形式 默认True
+'''
+
+def get_entities_with_mapping(text, id2label, pred, mapping,with_dict=True):
     assert len(text) + 2 == len(mapping)
     chunks = []
     chunk = __chunk__(s=-1, e=-1, label='', text='')
@@ -190,8 +202,8 @@ def get_entities_with_mapping(text, id2label, pred, mapping):
                 chunks.append(copy.deepcopy(chunk))
             reset_chunk(chunk)
 
-    # [tuple(chunk) for chunk in chunks]
-    # [('案发时间', 0, 9, '2014年3月29日')]
+    if not with_dict:
+        return chunks
     labels = {}
     for chunk in chunks:
         l = chunk.label
@@ -244,10 +256,11 @@ def viterbi_decode(score, transition_params):
     batch_logits 为bert 预测结果 logits_all (batch,seq_len,num_tags) or (batch,seq_len)
     trans 是否启用trans预测 , 2D 
     batch_mapping 映射序列
+    with_dict 是否返回dict形式 默认True
 '''
 
 
-def ner_crf_decoding(batch_text, id2label, batch_logits, trans=None, batch_mapping=None):
+def ner_crf_decoding(batch_text, id2label, batch_logits, trans=None, batch_mapping=None,with_dict=True):
     formatted_outputs = []
     for (i, (text_raw, logits)) in enumerate(zip(batch_text, batch_logits)):
         if np.ndim(logits) == 2:
@@ -262,9 +275,9 @@ def ner_crf_decoding(batch_text, id2label, batch_logits, trans=None, batch_mappi
         else:
             mapping = None
         if mapping is None:
-            label = get_entities(text_raw, id2label, logits)
+            label = get_entities(text_raw, id2label, logits,with_dict=with_dict)
         else:
-            label = get_entities_with_mapping(text_raw, id2label, logits, mapping=mapping)
+            label = get_entities_with_mapping(text_raw, id2label, logits, mapping=mapping,with_dict=with_dict)
         formatted_outputs.append(label)
     return formatted_outputs
 

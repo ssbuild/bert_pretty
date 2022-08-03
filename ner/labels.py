@@ -1,11 +1,5 @@
 # @Time    : 2022/3/25 16:08
 # @Author  : tk
-# @FileName: labels.py
-
-
-
-
-
 def load_label_bio(label_file_or_list):
     if isinstance(label_file_or_list,list):
         labels = label_file_or_list

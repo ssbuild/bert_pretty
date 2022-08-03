@@ -17,7 +17,7 @@ import numpy as np
 '''
 
 
-def ner_pointer_decoding(batch_text, id2label, batch_logits, threshold=1e-8, coordinates_minus=False):
+def ner_pointer_decoding(batch_text, id2label, batch_logits, threshold=1e-8,with_dict=True, coordinates_minus=False):
     batch_logits[:, :, [0, -1]] -= np.inf
     batch_logits[:, :, :, [0, -1]] -= np.inf
     formatted_outputs = []
@@ -34,7 +34,9 @@ def ner_pointer_decoding(batch_text, id2label, batch_logits, threshold=1e-8, coo
                 continue
             str_label = id2label[l]
             chunks.append((str_label, start, end, str(text_raw[start:end + 1])))
-
+        if not with_dict:
+            formatted_outputs.append(chunks)
+            continue
         labels = {}
         for chunk in chunks:
             l = chunk[0]
@@ -60,7 +62,7 @@ def ner_pointer_decoding(batch_text, id2label, batch_logits, threshold=1e-8, coo
     coordinates_minus
 '''
 
-def ner_pointer_decoding_with_mapping(batch_text, id2label, batch_logits, batch_mapping,threshold=1e-8,coordinates_minus=False):
+def ner_pointer_decoding_with_mapping(batch_text, id2label, batch_logits, batch_mapping,threshold=1e-8,with_dict=True, coordinates_minus=False):
     batch_logits[:, :, [0, -1]] -= np.inf
     batch_logits[:, :, :, [0, -1]] -= np.inf
     formatted_outputs = []
@@ -85,7 +87,9 @@ def ner_pointer_decoding_with_mapping(batch_text, id2label, batch_logits, batch_
                 continue
             str_label = id2label[l]
             chunks.append((str_label, start, end, str(text_raw[start:end + 1])))
-
+        if not with_dict:
+            formatted_outputs.append(chunks)
+            continue
         labels = {}
         for chunk in chunks:
             l = chunk[0]

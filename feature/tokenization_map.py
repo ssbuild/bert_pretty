@@ -137,12 +137,17 @@ def rematch(text, tokens,_do_lower_case):
     text, token_mapping, offset = normalized_text, [], 0
 
     for i,token in enumerate(tokens):
-        if _is_special(token):
-            token_mapping.append([] if i == 0 or i == len(tokens) - 1 else [offset])
+        if token != '[UNK]' and _is_special(token):
+            token_mapping.append([])
         else:
             token = _stem(token)
-            start = text[offset:].index(token) + offset
-            end = start + len(token)
+            try:
+                start = text[offset:].index(token) + offset
+                end = start + len(token)
+            except Exception as e:
+                start = offset
+                end = start + 1
+
             token_mapping.append(char_mapping[start:end])
             offset = end
 

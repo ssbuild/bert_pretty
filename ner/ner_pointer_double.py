@@ -4,8 +4,6 @@
 
 import numpy as np
 
-
-
 '''
     def ner_pointer_double_decoding(batch_text, id2label, batch_logits_start,batch_logits_end,with_dict=True,threshold=0.5):
 
@@ -25,11 +23,11 @@ def ner_pointer_double_decoding(batch_text, id2label, batch_logits_start,batch_l
         es = []
         t_length = len(text_raw)
 
-        for seq, l in zip(*np.where(logits_start[1:-1] >= threshold)):
+        for seq, l in zip(*np.where(logits_start[1:-1] > threshold)):
             seq = int(seq)
             l = int(l)
             ss.append((seq, l))
-        for seq, l in zip(*np.where(logits_end[1:-1] >= threshold)):
+        for seq, l in zip(*np.where(logits_end[1:-1] > threshold)):
             seq = int(seq)
             l = int(l)
             es.append((seq, l))
@@ -46,6 +44,7 @@ def ner_pointer_double_decoding(batch_text, id2label, batch_logits_start,batch_l
                 chunks.append((str_label, s, e,text_raw[s:e+1]))
         if not with_dict:
             formatted_outputs.append(chunks)
+            continue
         labels = {}
         for chunk in chunks:
             l = chunk[0]
@@ -86,7 +85,7 @@ def ner_pointer_double_decoding_with_mapping(batch_text, id2label, batch_logits_
         t_length = len(text_raw)
         m_len = len(mapping)
 
-        for seq, l in zip(*np.where(logits_start[1:-1] >= threshold)):
+        for seq, l in zip(*np.where(logits_start[1:-1] > threshold)):
             seq = int(seq)
             l = int(l)
 
@@ -94,7 +93,7 @@ def ner_pointer_double_decoding_with_mapping(batch_text, id2label, batch_logits_
                 continue
             seq = int(mapping[seq][0])
             ss.append((seq, l))
-        for seq, l in zip(*np.where(logits_end[1:-1] >= threshold)):
+        for seq, l in zip(*np.where(logits_end[1:-1] > threshold)):
             seq = int(seq)
             l = int(l)
             if seq >= m_len:
@@ -114,6 +113,7 @@ def ner_pointer_double_decoding_with_mapping(batch_text, id2label, batch_logits_
                 chunks.append((str_label, s, e,text_raw[s:e+1]))
         if not with_dict:
             formatted_outputs.append(chunks)
+            continue
         labels = {}
         for chunk in chunks:
             l = chunk[0]

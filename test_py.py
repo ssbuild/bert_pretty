@@ -12,7 +12,8 @@ from bert_pretty import FullTokenizer,\
         text_feature_char_level_input_ids_mask, \
         text_feature_word_level_input_ids_mask, \
         text_feature_char_level_input_ids_segment, \
-        text_feature_word_level_input_ids_segment
+        text_feature_word_level_input_ids_segment, \
+        seqs_padding,rematch
 
 
 from bert_pretty.ner import load_label_bioes,load_label_bio,load_labels as ner_load_labels
@@ -25,125 +26,59 @@ from bert_pretty.cls import cls_softmax_decoding,cls_sigmoid_decoding,load_label
 
 
 tokenizer = FullTokenizer(vocab_file=r'F:\pretrain\chinese_L-12_H-768_A-12\vocab.txt',do_lower_case=True)
-text_list = ["你是谁123"]
+text_list = ["你是谁123aa\ta嘂a","嘂adasd"]
 
 
 
+def test():
+    do_lower_case = tokenizer.basic_tokenizer.do_lower_case
+    inputs = [tokenizer.tokenize(text) for text in text_list]
+
+    mapping = [rematch(text,tokens, do_lower_case) for text,tokens in zip(text_list,inputs)]
+
+    inputs = [ tokenizer.convert_tokens_to_ids(input) for input in inputs]
+
+    input_mask = [[1] * len(input) for input in inputs]
+    input_segment = [[0] * len(input) for input in inputs]
+    input_ids = seqs_padding(inputs)
+    input_mask = seqs_padding(input_mask)
+    input_segment = seqs_padding(input_segment)
+
+
+    print('input_ids\n', input_ids)
+    print('mapping\n',mapping)
+    print('input_mask\n',input_mask)
+    print('input_segment\n',input_segment)
+    print('\n\n')
 
 
 
-#convert_to_ids 基础用法1
-def test_feat1():
-    feat = text_feature_char_level(tokenizer,text_list,max_seq_len=64,with_padding=True)
-    print('char level',feat)
-    feat = text_feature_char_level_input_ids_mask(tokenizer, text_list, max_seq_len=128, with_padding=False)
-    print('char level', feat)
-    feat = text_feature_char_level_input_ids_segment(tokenizer, text_list, max_seq_len=128, with_padding=False)
-    print('char level', feat)
+def test_charlevel():
+    do_lower_case = tokenizer.basic_tokenizer.do_lower_case
+    vocab = tokenizer.vocab
+    unk_id = vocab.get('[UNK]')
 
-    #
-    feat = text_feature_word_level(tokenizer,text_list,max_seq_len=128,with_padding=False,with_token_mapping=True)
-    print('word level',feat)
-    feat = text_feature_word_level_input_ids_mask(tokenizer, text_list, max_seq_len=128, with_padding=False,with_token_mapping=True)
-    print('word level', feat)
-    feat = text_feature_word_level_input_ids_segment(tokenizer, text_list, max_seq_len=128, with_padding=False,with_token_mapping=True)
-    print('word level', feat)
-
-    batch_input_ids,batch_seg_ids,batch_mapping = text_feature_word_level_input_ids_segment(tokenizer, text_list, max_seq_len=128, with_padding=False,
-                                                     with_token_mapping=True)
-    print('word level', batch_input_ids,batch_seg_ids,batch_mapping)
-
-#convert_to_ids 基础用法2
-def test_feat2():
-    def my_input_callback1(tokenizer, input_instance, max_seq_len,with_padding,with_token_mapping):
-        tokens = tokenizer.tokenize(input_instance)
-        if len(tokens) > max_seq_len - 2:
-            tokens = tokens[0:max_seq_len - 2]
-        tokens.insert(0, "[CLS]")
-        tokens.append("[SEP]")
-        input_ids = tokenizer.convert_tokens_to_ids(tokens)
-        segment_ids = [0] * len(input_ids)
-
-        if with_padding:
-            while len(input_ids) < max_seq_len:
-                input_ids.append(0)
-                segment_ids.append(0)
-        return input_ids,segment_ids
+    inputs = []
+    for text in text_list:
+        if do_lower_case:
+            inputs.append([vocab.get(char,unk_id) for char in text])
+        else:
+            inputs.append([vocab.get(char.lower(), unk_id) for char in text])
 
 
-    feat = text_feature(tokenizer,text_list,max_seq_len=128,with_padding=False,
-                        input_ids_callback=my_input_callback1)
-    print('自定义 callback1',feat)
 
-    def my_input_callback2(tokenizer, input_instance, max_seq_len,with_padding,with_token_mapping):
-        word_list = list(input_instance)
-        tokens = ["[CLS]"]
-        for i, word in enumerate(word_list):
-            token = tokenizer.tokenize(word)
-            tokens.extend(token)
-        if len(tokens) > max_seq_len - 1:
-            tokens = tokens[0:max_seq_len - 1]
-        tokens.append("[SEP]")
-        input_ids = tokenizer.convert_tokens_to_ids(tokens)
-        if with_padding:
-            while len(input_ids) < max_seq_len:
-                input_ids.append(0)
-        return input_ids
+    inputs = [ tokenizer.convert_tokens_to_ids(input) for input in inputs]
 
-    feat = text_feature(tokenizer, text_list, max_seq_len=128, with_padding=False,
-                        input_ids_callback=my_input_callback2)
-    print('自定义 callback2',feat)
+    input_mask = [[1] * len(input) for input in inputs]
+    input_segment = [[0] * len(input) for input in inputs]
+    input_ids = seqs_padding(inputs)
+    input_mask = seqs_padding(input_mask)
+    input_segment = seqs_padding(input_segment)
 
-    def my_input_callback3(tokenizer, input_instance, max_seq_len,with_padding,with_token_mapping):
-        word_list = list(input_instance)
-        tokens = ["[CLS]"]
-        for i, word in enumerate(word_list):
-            token = tokenizer.tokenize(word)
-            tokens.extend(token)
-        if len(tokens) > max_seq_len - 1:
-            tokens = tokens[0:max_seq_len - 1]
-        tokens.append("[SEP]")
-        input_ids = tokenizer.convert_tokens_to_ids(tokens)
-        input_mask = [1] * len(input_ids)
-        segment_ids = [0] * len(input_ids)
-        if with_padding:
-            while len(input_ids) < max_seq_len:
-                input_ids.append(0)
-                input_mask.append(0)
-                segment_ids.append(0)
-        return input_ids,input_mask,segment_ids
-
-    feat = text_feature(tokenizer, text_list, max_seq_len=128, with_padding=False,
-                        input_ids_callback=my_input_callback3)
-    print('自定义 callback3',feat)
-    
-    
-    def my_input_callback4(tokenizer, input_instance, max_seq_len,with_padding,with_token_mapping):
-        word_list = list(input_instance)
-        tokens = ["[CLS]"]
-        for i, word in enumerate(word_list):
-            token = tokenizer.tokenize(word)
-            tokens.extend(token)
-        if len(tokens) > max_seq_len - 1:
-            tokens = tokens[0:max_seq_len - 1]
-        tokens.append("[SEP]")
-        input_ids = tokenizer.convert_tokens_to_ids(tokens)
-        input_mask = [1] * len(input_ids)
-        segment_ids = [0] * len(input_ids)
-        if with_padding:
-            while len(input_ids) < max_seq_len:
-                input_ids.append(0)
-                input_mask.append(0)
-                segment_ids.append(0)
-        custom_data =['mapping']
-        return input_ids,input_mask,segment_ids,custom_data
-
-    feat = text_feature(tokenizer, text_list, max_seq_len=128, with_padding=False,
-                        input_ids_callback=my_input_callback4,
-                        input_ids_align_num=3,#只有前三个数据需要对齐 ，最后一个为自定义数据
-                        )
-    print('自定义 callback4',feat)
-
+    print('input_ids\n', input_ids)
+    print('input_mask\n',input_mask)
+    print('input_segment\n',input_segment)
+    print('\n\n')
 
 # labels = ['标签1','标签2']
 # print(cls.load_labels(labels))
@@ -152,7 +87,7 @@ def test_feat2():
 
 
 '''
-    # def ner_crf_decoding(batch_text, id2label, batch_logits, trans=None,batch_mapping=None):
+    # def ner_crf_decoding(batch_text, id2label, batch_logits, trans=None,batch_mapping=None,with_dict=True):
     ner crf decode 解析crf序列  or 解析 已经解析过的crf序列
 
     batch_text input_instance list , 
@@ -163,7 +98,7 @@ def test_feat2():
 '''
 
 '''
-    def ner_pointer_decoding(batch_text, id2label, batch_logits, threshold=1e-8,coordinates_minus=False)
+    def ner_pointer_decoding(batch_text, id2label, batch_logits, threshold=1e-8,coordinates_minus=False,with_dict=True)
 
     batch_text text list , 
     id2label 标签 list or dict
@@ -173,7 +108,7 @@ def test_feat2():
 '''
 
 '''
-    def ner_pointer_decoding_with_mapping(batch_text, id2label, batch_logits, batch_mapping,threshold=1e-8,coordinates_minus=False)
+    def ner_pointer_decoding_with_mapping(batch_text, id2label, batch_logits, batch_mapping,threshold=1e-8,coordinates_minus=False,with_dict=True)
 
     batch_text text list , 
     id2label 标签 list or dict
@@ -234,9 +169,9 @@ def test_gpt_decode():
 
 if __name__ == '__main__':
 
+    test()
+    test_charlevel()
 
-    test_feat1()
-    test_feat2()
     test_cls_decode()
     test_gpt_decode()
 
