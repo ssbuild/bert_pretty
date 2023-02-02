@@ -11,7 +11,7 @@ from setuptools.command.build_py import build_py as _build_py
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-sys.path.append(os.path.join(current_dir,'../'))
+sys.path.append(os.path.join(current_dir,'./'))
 
 package_name = 'bert_pretty'
 package_version = '0.1.0@post0'
@@ -55,8 +55,6 @@ class build_py(_build_py):
 
 
 if __name__ == '__main__':
-
-
     setuptools.setup(
         platforms=platforms_name,
         name=package_name,
@@ -68,18 +66,9 @@ if __name__ == '__main__':
         long_description=long_description_str,
         url="https://github.com/ssbuild/bert_pretty",
         package_dir={'bert_pretty': '../bert_pretty'},
-        #packages=setuptools.find_packages(exclude=['setup.py']),
         packages=setuptools.find_packages('..'),   # 指定需要安装的模块
-        #include_package_data=True,
-        #package_data={'': ['*.pyd','*.so','*.h','*.c','*.java']},
-        #ext_modules=[PrecompiledExtesion(package_name)],
         cmdclass={'build_ext': build_ext,'build_py': build_py},
-        # data_files =[('',["nn_sdk/easy_tokenizer.so","nn_sdk/engine_csdk.so"])],
-        # packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-        # py_modules=["six"], # 剔除不属于包的单文件Python模块
-        # install_requires=['peppercorn'], # 指定项目最低限度需要运行的依赖项
-        python_requires='>=3, <4', # python的依赖关系
-
+        python_requires='>=3, <4',
         #install_requires=['numpy>=1.18.0'],
         classifiers=[
             'Development Status :: 5 - Production/Stable',
