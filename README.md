@@ -28,7 +28,6 @@ tokenizer = FullTokenizer(vocab_file=r'F:\pretrain\chinese_L-12_H-768_A-12\vocab
 text_list = ["你是谁123aa\ta嘂a","嘂adasd"]
 
 
-
 def test():
     do_lower_case = tokenizer.basic_tokenizer.do_lower_case
     inputs = [tokenizer.tokenize(text) for text in text_list]
@@ -149,30 +148,13 @@ def test_cls_decode():
     print(result)
 
 
-def test_gpt_decode():
-    from bert_pretty.gpt import autoregressive_decode_batch, autoregressive_decode_once
-
-    result = autoregressive_decode_batch(tokenizer, end_symbol=['$','[SEP]'], max_length=10, start_text='你是谁123', try_count=3)
-
-    for i,text in enumerate(result):
-        print(i,len(text),''.join(text))
-
-    print()
-    result = autoregressive_decode_once(tokenizer,end_symbol=['$','[SEP]'],
-                                        special_redo_symbol=['[PAD]','[UNK]'],
-                                        max_length=10, start_text='你是谁123',
-                                        try_count=3)
-
-    for i, text in enumerate(result):
-        print(i, len(text), ''.join(text))
 
 if __name__ == '__main__':
-
     test()
     test_charlevel()
 
     test_cls_decode()
-    test_gpt_decode()
+ 
 
 
 
