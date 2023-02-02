@@ -11,7 +11,6 @@ from setuptools.command.build_py import build_py as _build_py
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-sys.path.append(os.path.join(current_dir,'./'))
 
 package_name = 'bert_pretty'
 package_version = '0.1.0@post0'
@@ -43,15 +42,6 @@ class build_ext(_build_ext):
             return super().build_extension(ext)
 
 
-exclude = ['setup']
-#bert_pretty_github
-class build_py(_build_py):
-    def find_package_modules(self, package, package_dir):
-        if package.startswith('bert_pretty_github'):
-            return []
-        modules = super().find_package_modules(package, package_dir)
-        return [(pkg, mod, file, )  for (pkg, mod, file,) in modules if mod not in exclude and not pkg.startswith('bert_pretty_github') ]
-
 
 
 if __name__ == '__main__':
@@ -65,9 +55,8 @@ if __name__ == '__main__':
         long_description_content_type='text/markdown',
         long_description=long_description_str,
         url="https://github.com/ssbuild/bert_pretty",
-        package_dir={'bert_pretty': '../bert_pretty'},
-        packages=setuptools.find_packages('..'),   # 指定需要安装的模块
-        cmdclass={'build_ext': build_ext,'build_py': build_py},
+        package_dir={'bert_pretty': './bert_pretty'},
+        packages=setuptools.find_packages('.'),   # 指定需要安装的模块
         python_requires='>=3, <4',
         #install_requires=['numpy>=1.18.0'],
         classifiers=[
